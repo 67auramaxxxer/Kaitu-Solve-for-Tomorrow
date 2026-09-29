@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KaiTū — Food, tracked with care</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#F6F2E7;
+  --paper-raised:#FFFEFA;
+  --paper-dim:#ECE5D3;
+  --ink:#201D14;
+  --ink-soft:#5B563F;
+  --ink-faint:#8A836A;
+  --line: rgba(32,29,20,0.13);
+  --line-strong: rgba(32,29,20,0.24);
+
+  --green:#20493B;
+  --green-deep:#123026;
+  --green-soft:#DDE6D9;
+  --green-soft-ink:#1F3B2C;
+
+  --accent:#E0A63A;
+  --accent-ink:#4A3410;
+  --accent-soft:#F5E3B8;
+
+  --rust:#A5432B;
+  --rust-soft:#F0DCD1;
+  --rust-ink:#5A2415;
+
+  --blue:#2E5C6E;
+  --blue-soft:#D9E6E9;
+
+  --radius-s:10px;
+  --radius-m:18px;
+  --radius-l:28px;
+  --radius-pill:999px;
+
+  --shadow-card: 0 1px 0 rgba(32,29,20,0.05);
+  --font-display:'Fraunces', serif;
+  --font-body:'Work Sans', sans-serif;
+
+  --gap:20px;
+  --dur:220ms;
+  --ease: cubic-bezier(.4,.1,.2,1);
+}
+:root[data-fontsize="s"]{ --fs-base:14px; }
+:root[data-fontsize="m"]{ --fs-base:15.5px; }
+:root[data-fontsize="l"]{ --fs-base:17.5px; }
+
+:root[data-accent="gold"]{ --accent:#E0A63A; --accent-ink:#4A3410; --accent-soft:#F5E3B8; }
+:root[data-accent="green"]{ --accent:#4F7A54; --accent-ink:#1D3220; --accent-soft:#D9E7DA; }
+:root[data-accent="rust"]{ --accent:#C15A3B; --accent-ink:#4A2113; --accent-soft:#F1DBCD; }
+:root[data-accent="blue"]{ --accent:#3E7C8C; --accent-ink:#12313A; --accent-soft:#D9E9EC; }
+
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#171A15;
+    --paper-raised:#1E221C;
+    --paper-dim:#22261E;
+    --ink:#EEEAD9;
+    --ink-soft:#B9B49E;
+    --ink-faint:#847F6A;
+    --line: rgba(238,234,217,0.12);
+    --line-strong: rgba(238,234,217,0.22);
+    --green-soft:#233A2C;
+    --green-soft-ink:#BFE0C9;
+    --rust-soft:#3A241C;
+    --rust-ink:#E7B29E;
+    --blue-soft:#1E3438;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#171A15;
+  --paper-raised:#1E221C;
+  --paper-dim:#22261E;
+  --ink:#EEEAD9;
+  --ink-soft:#B9B49E;
+  --ink-faint:#847F6A;
+  --line: rgba(238,234,217,0.12);
+  --line-strong: rgba(238,234,217,0.22);
+  --green-soft:#233A2C;
+  --green-soft-ink:#BFE0C9;
+  --rust-soft:#3A241C;
+  --rust-ink:#E7B29E;
+  --blue-soft:#1E3438;
+}
+:root[data-motion="reduced"] *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+:root[data-density="compact"] .card{ padding:16px; }
+:root[data-density="compact"] .stat-grid{ gap:12px; }
+
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font-body); font-size:var(--fs-base,15.5px);
+  -webkit-font-smoothing:antialiased;
+}
+button, input, select, textarea{ font-family:inherit; font-size:inherit; color:inherit; }
+a{ color:inherit; }
+:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+::selection{ background:var(--accent-soft); }
+
+h1,h2,h3,h4{ font-family:var(--font-display); font-weight:600; margin:0; letter-spacing:-0.01em; }
+p{ margin:0; }
+
+.icon{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+
+/* ============ LAYOUT ============ */
+#app{ display:flex; min-height:100vh; }
+
+.sidebar{
+  width:242px; flex-shrink:0; background:var(--green); color:#EFEAD9;
+  display:flex; flex-direction:column; padding:22px 14px;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.brand{ display:flex; align-items:center; gap:10px; padding:4px 10px 22px; }
+.brand-mark{ width:34px; height:34px; flex-shrink:0; }
+.brand-word{ font-family:var(--font-display); font-size:20px; font-weight:600; color:#F7F3E3; }
+.brand-sub{ font-size:11px; color:#B9CBB9; margin-top:-2px; }
+
+.nav-group-label{ font-size:11px; text-transform:none; color:#9DB39C; padding:14px 12px 6px; letter-spacing:.02em; }
+.nav{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.nav-item{
+  display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:var(--radius-s);
+  background:none; border:none; width:100%; text-align:left; cursor:pointer;
+  color:#DCE6D6; font-size:14px; transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.nav-item .icon{ opacity:.85; }
+.nav-item:hover{ background:rgba(255,255,255,0.08); color:#fff; }
+.nav-item.active{ background:#F7F3E3; color:var(--green-deep); font-weight:600; }
+.nav-item.active .icon{ opacity:1; }
+
+.sidebar-foot{ margin-top:auto; padding-top:16px; border-top:1px solid rgba(255,255,255,0.12); }
+.whanau-toggle{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px; border-radius:var(--radius-s); background:rgba(255,255,255,0.06); }
+.whanau-toggle .label{ font-size:12.5px; color:#DCE6D6; line-height:1.3; }
+
+.main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+
+.topbar{
+  display:flex; align-items:center; gap:14px; padding:18px 30px; border-bottom:1px solid var(--line);
+  position:sticky; top:0; background:color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(6px); z-index:5;
+}
+.topbar h1{ font-size:22px; }
+.topbar .subtitle{ font-size:12.5px; color:var(--ink-faint); margin-top:2px; }
+.topbar-search{
+  margin-left:auto; display:flex; align-items:center; gap:8px; background:var(--paper-raised);
+  border:1px solid var(--line); border-radius:var(--radius-pill); padding:7px 14px; width:230px;
+}
+.topbar-search input{ border:none; background:none; width:100%; outline:none; }
+.icon-btn{
+  width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-raised);
+  display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; flex-shrink:0;
+}
+.icon-btn:hover{ border-color:var(--line-strong); }
+.icon-btn .dot{ position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:50%; background:var(--rust); border:1.5px solid var(--paper-raised); }
+.btn{
+  border:1px solid var(--line-strong); background:var(--paper-raised); padding:9px 16px; border-radius:var(--radius-pill);
+  cursor:pointer; font-weight:600; font-size:13.5px; display:inline-flex; align-items:center; gap:7px; white-space:nowrap;
+  transition:transform var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.btn:hover{ background:var(--paper-dim); }
+.btn:active{ transform:scale(.97); }
+.btn-primary{ background:var(--green); border-color:var(--green); color:#F7F3E3; }
+.btn-primary:hover{ background:var(--green-deep); }
+.btn-accent{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+.btn-ghost{ background:none; border-color:transparent; padding:9px 10px; }
+.btn-ghost:hover{ background:var(--paper-dim); }
+.btn-danger-text{ background:none; border:none; color:var(--rust-ink); font-weight:600; cursor:pointer; font-size:13px; padding:4px 6px; }
+.btn-sm{ padding:6px 12px; font-size:12.5px; }
+
+.view{ padding:26px 30px 60px; max-width:1180px; }
+.view-header{ margin-bottom:22px; }
+.view-header p.lede{ color:var(--ink-soft); margin-top:6px; max-width:60ch; line-height:1.5; }
+
+.grid{ display:grid; gap:var(--gap); }
+.grid-2{ grid-template-columns:1.3fr 1fr; }
+.grid-3{ grid-template-columns:repeat(3,1fr); }
+@media(max-width:920px){ .grid-2,.grid-3{ grid-template-columns:1fr; } }
+
+.card{
+  background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius-m);
+  padding:20px; box-shadow:var(--shadow-card);
+}
+.card h3{ font-size:15px; }
+.card + .card{ margin-top:var(--gap); }
+
+.stat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:var(--gap); margin-bottom:var(--gap); }
+@media(max-width:920px){ .stat-grid{ grid-template-columns:repeat(2,1fr); } }
+.stat-card{
+  background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius-m); padding:18px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.stat-card .stat-icon{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+.stat-card .stat-value{ font-family:var(--font-display); font-size:26px; font-weight:600; line-height:1; }
+.stat-card .stat-label{ font-size:12.5px; color:var(--ink-faint); }
+.stat-card .stat-delta{ font-size:12px; font-weight:600; }
+.delta-up{ color:var(--rust-ink); }
+.delta-down{ color:var(--green-soft-ink); }
+
+.badge{ display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:var(--radius-pill); font-size:11.5px; font-weight:600; }
+.badge-green{ background:var(--green-soft); color:var(--green-soft-ink); }
+.badge-gold{ background:var(--accent-soft); color:var(--accent-ink); }
+.badge-rust{ background:var(--rust-soft); color:var(--rust-ink); }
+.badge-blue{ background:var(--blue-soft); color:var(--blue); }
+.badge-neutral{ background:var(--paper-dim); color:var(--ink-soft); }
+
+.form-row{ display:flex; flex-wrap:wrap; gap:10px; }
+.field{ display:flex; flex-direction:column; gap:5px; flex:1; min-width:120px; }
+.field label{ font-size:12px; color:var(--ink-soft); font-weight:600; }
+.field input, .field select, .field textarea{
+  border:1px solid var(--line-strong); background:var(--paper); border-radius:var(--radius-s); padding:9px 11px; outline:none;
+}
+.field input:focus, .field select:focus, .field textarea:focus{ border-color:var(--accent); }
+.field-sm{ max-width:110px; }
+
+.list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.list-row{
+  display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--line);
+}
+.list-row:last-child{ border-bottom:none; }
+.list-row .row-icon{ width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.list-row .row-title{ font-weight:600; font-size:14px; }
+.list-row .row-sub{ font-size:12.5px; color:var(--ink-faint); }
+.list-row .row-main{ flex:1; min-width:0; }
+.list-row .row-end{ text-align:right; font-weight:600; white-space:nowrap; }
+
+.empty{ text-align:center; padding:34px 20px; color:var(--ink-faint); }
+.empty .icon{ width:30px; height:30px; margin-bottom:10px; opacity:.6; }
+.empty strong{ display:block; color:var(--ink-soft); font-size:14px; margin-bottom:4px; }
+
+.tabbar{ display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+.tab{ background:none; border:none; padding:9px 4px; margin-right:18px; cursor:pointer; font-weight:600; color:var(--ink-faint); border-bottom:2px solid transparent; }
+.tab.active{ color:var(--ink); border-color:var(--accent); }
+
+.toast-wrap{ position:fixed; bottom:24px; right:24px; display:flex; flex-direction:column; gap:8px; z-index:200; }
+.toast{ background:var(--ink); color:var(--paper); padding:11px 18px; border-radius:var(--radius-s); font-size:13.5px; box-shadow:0 8px 22px rgba(0,0,0,.2); animation:toastIn .25s var(--ease); }
+@keyframes toastIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
+
+.modal-scrim{ position:fixed; inset:0; background:rgba(20,18,10,0.45); display:flex; align-items:flex-start; justify-content:center; padding:60px 20px; z-index:150; overflow:auto; }
+.modal{ background:var(--paper-raised); border-radius:var(--radius-l); padding:26px; width:100%; max-width:440px; border:1px solid var(--line); }
+.modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+
+.progress-track{ height:9px; border-radius:var(--radius-pill); background:var(--paper-dim); overflow:hidden; }
+.progress-fill{ height:100%; border-radius:var(--radius-pill); background:var(--green); transition:width .5s var(--ease); }
+
+.pill-toggle{ display:inline-flex; background:var(--paper-dim); border-radius:var(--radius-pill); padding:3px; gap:2px; }
+.pill-toggle button{ border:none; background:none; padding:7px 15px; border-radius:var(--radius-pill); cursor:pointer; font-weight:600; font-size:13px; color:var(--ink-faint); }
+.pill-toggle button.active{ background:var(--paper-raised); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+
+.value-card{ border-radius:var(--radius-m); border:1px solid var(--line); padding:20px; background:var(--paper-raised); }
+.value-card .maori{ font-family:var(--font-display); font-size:19px; }
+.value-card .eng{ font-size:12px; color:var(--ink-faint); text-transform:none; margin-top:2px; }
+.value-card p{ margin-top:10px; font-size:13.5px; color:var(--ink-soft); line-height:1.55; }
+
+.network-diagram{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin:20px 0 26px; flex-wrap:wrap; }
+.network-node{ flex:1; min-width:120px; text-align:center; background:var(--paper-dim); border-radius:var(--radius-m); padding:16px 10px; border:1px solid var(--line); }
+.network-node .icon{ width:26px; height:26px; margin:0 auto 8px; }
+.network-node span{ font-size:12.5px; font-weight:600; }
+.network-arrow{ color:var(--ink-faint); font-size:18px; padding:0 2px; }
+@media(max-width:800px){ .network-diagram{ flex-direction:column; } .network-arrow{ transform:rotate(90deg); } }
+
+.mission-card{ display:flex; align-items:flex-start; gap:12px; border:1px solid var(--line); border-radius:var(--radius-m); padding:14px 16px; background:var(--paper-raised); }
+.mission-check{ width:22px; height:22px; border-radius:50%; border:2px solid var(--line-strong); flex-shrink:0; margin-top:2px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.mission-check.done{ background:var(--green); border-color:var(--green); color:#fff; }
+.mission-card.done .mission-text{ text-decoration:line-through; color:var(--ink-faint); }
+
+.settings-section{ margin-bottom:20px; }
+.settings-section h4{ font-size:13px; color:var(--ink-soft); margin-bottom:10px; }
+.swatch-row{ display:flex; gap:8px; }
+.swatch{ width:34px; height:34px; border-radius:50%; border:2px solid transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.swatch.selected{ border-color:var(--ink); }
+
+.recipe-card{ border:1px solid var(--line); border-radius:var(--radius-m); padding:16px; background:var(--paper-raised); }
+.recipe-card .match{ font-size:12px; color:var(--green-soft-ink); font-weight:600; margin-bottom:6px; }
+.recipe-card h4{ font-size:15px; margin-bottom:6px; }
+.recipe-card p{ font-size:13px; color:var(--ink-soft); line-height:1.5; }
+
+.week-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+@media(max-width:800px){ .week-grid{ grid-template-columns:repeat(2,1fr); } }
+.week-day{ border:1px solid var(--line); border-radius:var(--radius-s); padding:10px; background:var(--paper-raised); }
+.week-day .dname{ font-size:11px; font-weight:700; color:var(--ink-faint); margin-bottom:6px; }
+.week-day input{ width:100%; border:none; background:none; font-size:12.5px; outline:none; resize:none; }
+.week-day input:focus{ background:var(--paper-dim); border-radius:6px; }
+
+.insight-card{ display:flex; gap:14px; border:1px solid var(--line); border-radius:var(--radius-m); padding:16px; background:var(--paper-raised); }
+.insight-card .row-icon{ width:38px; height:38px; }
+.insight-card h4{ font-size:14.5px; margin-bottom:4px; }
+.insight-card p{ font-size:13px; color:var(--ink-soft); line-height:1.5; }
+
+.checklist-item{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); padding:4px 0; }
+
+@media(max-width:760px){
+  .sidebar{ position:fixed; left:-260px; z-index:100; transition:left var(--dur) var(--ease); box-shadow:0 0 0 2000px rgba(0,0,0,0); }
+  .sidebar.open{ left:0; box-shadow:0 0 40px rgba(0,0,0,.3); }
+  .topbar-search{ display:none; }
+  .view{ padding:20px 16px 60px; }
+  .stat-grid{ grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body data-fontsize="m">
+<svg width="0" height="0" style="position:absolute">
+<defs>
+<symbol id="i-leaf" viewBox="0 0 24 24"><path d="M4 20c8 1 15-4 16-16C10 4 4 10 4 20Z"/><path d="M6 18C12 12 15 9 18 5"/></symbol>
+<symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M9.5 9.3c0-1.1 1.1-2 2.5-2s2.5.7 2.5 1.8-1 1.6-2.5 1.9c-1.5.3-2.5.8-2.5 1.9s1.1 1.8 2.5 1.8 2.5-.9 2.5-2"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4-8 4-8-4Z"/><path d="M4 8v8l8 4 8-4V8"/><path d="M12 12v8"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.2 2"/></symbol>
+<symbol id="i-hands" viewBox="0 0 24 24"><path d="M3 13l4-4 4 2 4-3 4 3"/><path d="M3 13c2 3 5 5 9 5s7-2 9-5"/><path d="M7 9v4M15 8v4"/></symbol>
+<symbol id="i-pot" viewBox="0 0 24 24"><path d="M4 11h16v3a7 7 0 0 1-7 7h-2a7 7 0 0 1-7-7v-3Z"/><path d="M2 11h20M8 11c0-3 1.5-5 4-7 2.5 2 4 4 4 7"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+<symbol id="i-tree" viewBox="0 0 24 24"><path d="M12 22v-6"/><path d="M12 16c-4 0-7-2.5-7-6.5C5 5 8 3 12 3s7 2 7 6.5c0 4-3 6.5-7 6.5Z"/></symbol>
+<symbol id="i-network" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2.3"/><circle cx="19" cy="6" r="2.3"/><circle cx="12" cy="18" r="2.3"/><path d="M6.8 7.6L11 16M17.2 7.6L13 16M7.3 6h9.4"/></symbol>
+<symbol id="i-fern" viewBox="0 0 24 24"><path d="M12 21V3"/><path d="M12 6c3-2 6-1 7 1-3 1-5 0-7-1ZM12 10c3-2 6-1 7 1-3 1-5 0-7-1ZM12 14c3-2 6-1 7 1-3 1-5 0-7-1ZM12 6c-3-2-6-1-7 1 3 1 5 0 7-1ZM12 10c-3-2-6-1-7 1 3 1 5 0 7-1ZM12 14c-3-2-6-1-7 1 3 1 5 0 7-1Z"/></symbol>
+<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18 6l-1.7 1.7M7.7 16.3 6 18M18 18l-1.7-1.7M7.7 7.7 6 6"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></symbol>
+<symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 21c4 0 7-2.5 7-6.5 0-3-1.8-4.8-3-6.5-.2 1.6-1 2.6-2 3-0.3-2.6-1.5-4.6-3.3-6-0.4 2.3-1.4 3.7-3 5.2C6.2 11.6 5 13.2 5 15.5 5 19 8 21 12 21Z"/></symbol>
+<symbol id="i-basket" viewBox="0 0 24 24"><path d="M4 10h16l-1.5 9h-13L4 10Z"/><path d="M8 10 9.5 4h5L16 10M9 14v3M15 14v3M12 14v3"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="M9 4 4 6v14l5-2 6 2 5-2V4l-5 2-6-2Z"/><path d="M9 4v14M15 6v14"/></symbol>
+<symbol id="i-fridge" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="1.6"/><path d="M5 9h14M8 5v2M8 12v2"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9.5-9C1 8 2 4.5 5.5 4 8 3.6 10 5 12 7c2-2 4-3.4 6.5-3 3.5.5 4.5 4 3 7-2.5 4.6-9.5 9-9.5 9Z"/></symbol>
+</defs>
+</svg>
+
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="19" stroke="#E0A63A" stroke-width="1.4"/><path d="M20 30V15" stroke="#EFEAD9" stroke-width="1.6" stroke-linecap="round"/><path d="M20 17c4-3 8-2 9 1-4 1-7 0-9-1ZM20 21c4-3 8-2 9 1-4 1-7 0-9-1ZM20 17c-4-3-8-2-9 1 4 1 7 0 9-1ZM20 21c-4-3-8-2-9 1 4 1 7 0 9-1Z" fill="#EFEAD9"/></svg>
+      <div>
+        <div class="brand-word">KaiTū</div>
+        <div class="brand-sub">kai stands, not wasted</div>
+      </div>
+    </div>
+    <div class="nav-group-label">Track</div>
+    <ul class="nav">
+      <li><button class="nav-item" data-view="dashboard"><svg class="icon"><use href="#i-home"/></svg>Dashboard</button></li>
+      <li><button class="nav-item" data-view="waste"><svg class="icon"><use href="#i-basket"/></svg>Waste tracker</button></li>
+      <li><button class="nav-item" data-view="money"><svg class="icon"><use href="#i-coin"/></svg>Money tracker</button></li>
+      <li><button class="nav-item" data-view="inventory"><svg class="icon"><use href="#i-box"/></svg>Inventory</button></li>
+    </ul>
+    <div class="nav-group-label">Act</div>
+    <ul class="nav">
+      <li><button class="nav-item" data-view="rescue"><svg class="icon"><use href="#i-clock"/></svg>Rescue queue</button></li>
+      <li><button class="nav-item" data-view="share"><svg class="icon"><use href="#i-hands"/></svg>Share &amp; radar</button></li>
+      <li><button class="nav-item" data-view="kitchen"><svg class="icon"><use href="#i-pot"/></svg>Kitchen</button></li>
+    </ul>
+    <div class="nav-group-label">Understand</div>
+    <ul class="nav">
+      <li><button class="nav-item" data-view="insights"><svg class="icon"><use href="#i-chart"/></svg>Insights</button></li>
+      <li><button class="nav-item" data-view="impact"><svg class="icon"><use href="#i-tree"/></svg>Impact &amp; community</button></li>
+      <li><button class="nav-item" data-view="network"><svg class="icon"><use href="#i-network"/></svg>Kai network</button></li>
+      <li><button class="nav-item" data-view="values"><svg class="icon"><use href="#i-fern"/></svg>Our values</button></li>
+    </ul>
+    <div class="sidebar-foot">
+      <div class="whanau-toggle">
+        <div class="label">Whānau mode<br><span id="whanauState" style="opacity:.75">Off — just me</span></div>
+        <button class="btn btn-sm" id="whanauBtn" style="background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25); color:#F7F3E3;">Toggle</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn" id="menuBtn" style="display:none"><svg class="icon" style="width:16px;height:16px"><use href="#i-network"/></svg></button>
+      <div>
+        <h1 id="viewTitle">Dashboard</h1>
+        <div class="subtitle" id="viewSubtitle">Kia ora — here's where things stand today.</div>
+      </div>
+      <div class="topbar-search">
+        <svg class="icon" style="width:15px;height:15px;color:var(--ink-faint)"><use href="#i-search"/></svg>
+        <input id="globalSearch" placeholder="Search sections…" autocomplete="off">
+      </div>
+      <button class="icon-btn" id="notifBtn" title="Notifications"><svg class="icon" style="width:16px;height:16px"><use href="#i-bell"/></svg><span class="dot" id="notifDot" style="display:none"></span></button>
+      <button class="icon-btn" id="settingsBtn" title="Theme &amp; accessibility"><svg class="icon" style="width:16px;height:16px"><use href="#i-gear"/></svg></button>
+      <button class="btn btn-accent" id="quickAddBtn"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"/></svg>Quick add</button>
+    </header>
+    <main id="viewRoot" class="view"></main>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   STORAGE
+=============================================================== */
+const LS_KEY = "kaitu_state_v1";
+const todayStr = () => new Date().toISOString().slice(0,10);
+const daysBetween = (a,b) => Math.round((new Date(b)-new Date(a))/86400000);
+const fmtMoney = n => "$" + (Math.round((n+Number.EPSILON)*100)/100).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtDate = d => new Date(d+"T00:00:00").toLocaleDateString(undefined,{month:'short',day:'numeric'});
+const uid = () => Math.random().toString(36).slice(2,10);
+const monthKey = d => d.slice(0,7);
+const thisMonthKey = () => todayStr().slice(0,7);
+const clamp = (n,a,b) => Math.max(a,Math.min(b,n));
+
+function seedState(){
+  const t = todayStr();
+  const daysAgo = n => { const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
+  const daysAhead = n => { const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); };
+  return {
+    householdName: "Your kitchen",
+    whanauMode: false,
+    budgetMonthly: 220,
+    impactPoints: 34,
+    waste: [
+      {id:uid(), item:"Spinach", qty:1, unit:"bag", reason:"Forgotten", cost:4.5, date:daysAgo(3)},
+      {id:uid(), item:"Bread", qty:1, unit:"loaf", reason:"Expired", cost:5, date:daysAgo(9)},
+      {id:uid(), item:"Rice (cooked)", qty:2, unit:"cups", reason:"Cooked too much", cost:2, date:daysAgo(15)},
+      {id:uid(), item:"Tomatoes", qty:4, unit:"pcs", reason:"Damaged", cost:3.2, date:daysAgo(24)},
+      {id:uid(), item:"Milk", qty:1, unit:"L", reason:"Expired", cost:4, date:daysAgo(40)},
+    ],
+    purchases: [
+      {id:uid(), name:"Weekly groceries", amount:86, category:"Groceries", date:daysAgo(2)},
+      {id:uid(), name:"Butchery order", amount:34, category:"Meat", date:daysAgo(6)},
+      {id:uid(), name:"Farmers market", amount:22, category:"Produce", date:daysAgo(11)},
+      {id:uid(), name:"Weekly groceries", amount:79, category:"Groceries", date:daysAgo(16)},
+    ],
+    inventory: [
+      {id:uid(), name:"Spinach", qty:"1 bag", expiry:daysAhead(1)},
+      {id:uid(), name:"Carrots", qty:"5", expiry:daysAhead(2)},
+      {id:uid(), name:"Yoghurt", qty:"2 tubs", expiry:daysAhead(1)},
+      {id:uid(), name:"Rice", qty:"2 kg", expiry:daysAhead(120)},
+      {id:uid(), name:"Chicken thighs", qty:"600g", expiry:daysAhead(3)},
+      {id:uid(), name:"Onions", qty:"6", expiry:daysAhead(30)},
+      {id:uid(), name:"Kūmara", qty:"4", expiry:daysAhead(14)},
+    ],
+    surplus: [
+      {id:uid(), food:"Silverbeet from the garden", amount:"1 big bunch", location:"Grey Lynn pickup", date:daysAgo(1)},
+    ],
+    mealPlan: {Mon:"",Tue:"",Wed:"",Thu:"",Fri:"",Sat:"",Sun:""},
+    missionsDone: {},
+    settings: { theme:"system", accent:"gold", fontsize:"m", motion:"full", density:"comfortable" }
+  };
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) { const s = seedState(); localStorage.setItem(LS_KEY, JSON.stringify(s)); return s; }
+    const parsed = JSON.parse(raw);
+    return Object.assign(seedState(), parsed);
+  }catch(e){ return seedState(); }
+}
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.warn("Couldn't save", e); } }
+
+let state = loadState();
+
+/* ============================================================
+   TOAST
+=============================================================== */
+function toast(msg){
+  const wrap = document.getElementById("toastWrap");
+  const el = document.createElement("div");
+  el.className = "toast"; el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition="opacity .3s"; el.style.opacity="0"; setTimeout(()=>el.remove(),300); }, 2600);
+}
+
+/* ============================================================
+   DERIVED STATS
+=============================================================== */
+function wasteThisMonth(){ return state.waste.filter(w=>monthKey(w.date)===thisMonthKey()); }
+function purchasesThisMonth(){ return state.purchases.filter(p=>monthKey(p.date)===thisMonthKey()); }
+function wasteCost(list){ return list.reduce((s,w)=>s+Number(w.cost||0),0); }
+function spendTotal(list){ return list.reduce((s,p)=>s+Number(p.amount||0),0); }
+
+function monthlyWasteSeries(months=6){
+  const out = [];
+  for(let i=months-1;i>=0;i--){
+    const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()-i);
+    const key = d.toISOString().slice(0,7);
+    const label = d.toLocaleDateString(undefined,{month:'short'});
+    const cost = wasteCost(state.waste.filter(w=>monthKey(w.date)===key));
+    out.push({key,label,cost});
+  }
+  return out;
+}
+
+function inventoryUrgency(inv){
+  const d = daysBetween(todayStr(), inv.expiry);
+  if(d < 0) return "overdue";
+  if(d <= 2) return "soon";
+  if(d <= 6) return "watch";
+  return "fresh";
+}
+function urgencyLabel(u){ return {overdue:"Overdue", soon:"Use very soon", watch:"Keep an eye on it", fresh:"Fresh"}[u]; }
+function urgencyBadgeClass(u){ return {overdue:"badge-rust", soon:"badge-rust", watch:"badge-gold", fresh:"badge-green"}[u]; }
+
+function rescueList(){
+  return state.inventory
+    .map(i=>({...i, urgency:inventoryUrgency(i)}))
+    .filter(i=>i.urgency==="overdue"||i.urgency==="soon")
+    .sort((a,b)=>daysBetween(todayStr(),a.expiry)-daysBetween(todayStr(),b.expiry));
+}
+
+function mostCommonReason(){
+  const counts = {};
+  state.waste.forEach(w=>counts[w.reason]=(counts[w.reason]||0)+1);
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  return entries[0] ? {reason:entries[0][0], count:entries[0][1]} : null;
+}
+function mostWastedFood(){
+  const counts = {};
+  state.waste.forEach(w=>counts[w.item]=(counts[w.item]||0)+1);
+  const entries = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  return entries[0] ? {item:entries[0][0], count:entries[0][1]} : null;
+}
+function wasteTrendDirection(){
+  const series = monthlyWasteSeries(2);
+  if(series.length<2) return 0;
+  return series[1].cost - series[0].cost;
+}
+function forecastNextMonth(){
+  const series = monthlyWasteSeries(3).map(s=>s.cost);
+  const avg = series.reduce((a,b)=>a+b,0)/ (series.length||1);
+  return avg;
+}
+function impactLevel(){ return clamp(Math.floor(state.impactPoints/50)+1, 1, 5); }
+function addPoints(n){ state.impactPoints += n; saveState(); }
+
+/* ============================================================
+   NAV / VIEW SWITCHING
+=============================================================== */
+const VIEWS = {
+  dashboard:{title:"Dashboard", sub:"Kia ora — here's where things stand today."},
+  waste:{title:"Food waste tracker", sub:"Log what didn't get eaten, and why."},
+  money:{title:"Money tracker", sub:"See what food waste is really costing you."},
+  inventory:{title:"Smart inventory", sub:"What's in the kitchen right now."},
+  rescue:{title:"Rescue queue", sub:"Food that needs a decision before it's too late."},
+  share:{title:"Share &amp; rescue radar", sub:"Give away what you won't use, find what others will."},
+  kitchen:{title:"Use-it-up kitchen", sub:"Turn what you have into what's for dinner."},
+  insights:{title:"Insights", sub:"Patterns in your waste, spotted for you."},
+  impact:{title:"Impact &amp; community", sub:"Your good decisions, made visible."},
+  network:{title:"Kai network", sub:"Households, businesses and rescue groups, connected."},
+  values:{title:"Our values", sub:"The kaupapa KaiTū is built on."},
+};
+
+function setView(view){
+  document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active", b.dataset.view===view));
+  document.getElementById("viewTitle").innerHTML = VIEWS[view].title;
+  document.getElementById("viewSubtitle").innerHTML = VIEWS[view].sub;
+  document.getElementById("viewRoot").innerHTML = renderers[view]();
+  document.getElementById("viewRoot").scrollTop = 0;
+  window.scrollTo(0,0);
+  location.hash = view;
+  document.getElementById("sidebar").classList.remove("open");
+}
+
+/* ============================================================
+   SMALL COMPONENTS
+=============================================================== */
+function statCard(icon, value, label, cls, delta){
+  return `<div class="stat-card">
+    <div class="stat-icon" style="background:var(--${cls}-soft, var(--paper-dim)); color:var(--${cls}-ink, var(--ink))"><svg class="icon"><use href="#${icon}"/></svg></div>
+    <div class="stat-value">${value}</div>
+    <div class="stat-label">${label}</div>
+    ${delta?`<div class="stat-delta ${delta.up?'delta-up':'delta-down'}">${delta.up?'↑':'↓'} ${delta.text}</div>`:''}
+  </div>`;
+}
+function emptyState(icon, title, sub){
+  return `<div class="empty"><svg class="icon"><use href="#${icon}"/></svg><strong>${title}</strong><span>${sub}</span></div>`;
+}
+
+/* ============================================================
+   RENDER: DASHBOARD
+=============================================================== */
+function renderDashboard(){
+  const wm = wasteThisMonth();
+  const costM = wasteCost(wm);
+  const pm = purchasesThisMonth();
+  const spendM = spendTotal(pm);
+  const rescue = rescueList();
+  const trend = wasteTrendDirection();
+  const projectedSaving = costM * 0.4;
+  const series = monthlyWasteSeries(6);
+  const maxCost = Math.max(1, ...series.map(s=>s.cost));
+
+  const focusItem = rescue[0];
+  let focusHtml;
+  if(focusItem){
+    const d = daysBetween(todayStr(), focusItem.expiry);
+    focusHtml = `<div class="card" style="background:var(--rust-soft); border-color:transparent;">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div class="stat-icon" style="background:var(--paper-raised); color:var(--rust-ink); width:44px;height:44px;"><svg class="icon"><use href="#i-clock"/></svg></div>
+        <div style="flex:1;min-width:200px;">
+          <div style="font-weight:700; color:var(--rust-ink);">Today's focus: ${focusItem.name}</div>
+          <div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">${d<0? 'This passed its date — decide now.' : d===0? 'Best used today.' : 'Best used within '+d+' day'+(d>1?'s':'')+'.'}</div>
+        </div>
+        <button class="btn btn-primary btn-sm" data-goto="rescue">Open rescue queue</button>
+      </div>
+    </div>`;
+  } else {
+    focusHtml = `<div class="card" style="background:var(--green-soft); border-color:transparent;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="stat-icon" style="background:var(--paper-raised); color:var(--green-soft-ink); width:44px;height:44px;"><svg class="icon"><use href="#i-check"/></svg></div>
+        <div><div style="font-weight:700;">Nothing urgent — nice work.</div><div style="font-size:13px;color:var(--ink-soft);margin-top:2px;">Nothing in your inventory needs attention today.</div></div>
+      </div>
+    </div>`;
+  }
+
+  const activity = [
+    ...state.waste.map(w=>({date:w.date, text:`Logged waste: ${w.item}`, sub:w.reason, icon:"i-basket", cls:"rust"})),
+    ...state.purchases.map(p=>({date:p.date, text:`Purchase: ${p.name}`, sub:fmtMoney(p.amount), icon:"i-coin", cls:"blue"})),
+    ...state.surplus.map(s=>({date:s.date, text:`Shared: ${s.food}`, sub:s.location, icon:"i-hands", cls:"green"})),
+  ].sort((a,b)=> new Date(b.date)-new Date(a.date)).slice(0,6);
+
+  const invUrgent = state.inventory.map(i=>inventoryUrgency(i));
+  const counts = {fresh:0,watch:0,soon:0,overdue:0};
+  invUrgent.forEach(u=>counts[u]++);
+  const budgetUsedPct = clamp(Math.round((spendM/(state.budgetMonthly||1))*100),0,999);
+
+  return `
+  ${focusHtml}
+  <div style="height:20px"></div>
+  <div class="stat-grid">
+    ${statCard("i-basket", wm.length, "Items wasted this month", "rust", {up:trend>0, text: fmtMoney(Math.abs(trend))+" vs last month"})}
+    ${statCard("i-coin", fmtMoney(costM), "Money lost to waste", "rust")}
+    ${statCard("i-leaf", fmtMoney(projectedSaving), "Potential savings this month", "green")}
+    ${statCard("i-hands", state.surplus.length, "Food shared", "blue")}
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Waste cost, last 6 months</h3>
+      <div style="display:flex; align-items:flex-end; gap:14px; height:140px; margin-top:18px;">
+        ${series.map(s=>`
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <div style="width:100%; max-width:34px; height:${Math.max(4,(s.cost/maxCost)*108)}px; background:${s.key===thisMonthKey()?'var(--accent)':'var(--paper-dim)'}; border-radius:6px 6px 3px 3px;" title="${fmtMoney(s.cost)}"></div>
+            <span style="font-size:11px; color:var(--ink-faint);">${s.label}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Household overview</h3>
+      <div style="margin-top:14px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px;"><span>Budget used this month</span><strong>${budgetUsedPct}%</strong></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${clamp(budgetUsedPct,0,100)}%; background:${budgetUsedPct>90?'var(--rust)':'var(--green)'}"></div></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:6px;">
+          <span class="badge badge-rust">${counts.overdue+counts.soon} need attention</span>
+          <span class="badge badge-gold">${counts.watch} to watch</span>
+          <span class="badge badge-green">${counts.fresh} fresh</span>
+        </div>
+        <div style="font-size:12px; color:var(--ink-faint); margin-top:4px;">Data for this device is saved locally in your browser.</div>
+      </div>
+    </div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Recent activity</h3>
+      <ul class="list">
+      ${activity.length? activity.map(a=>`
+        <li class="list-row">
+          <div class="row-icon" style="background:var(--${a.cls}-soft); color:var(--${a.cls}-ink)"><svg class="icon" style="width:16px;height:16px"><use href="#${a.icon}"/></svg></div>
+          <div class="row-main"><div class="row-title">${a.text}</div><div class="row-sub">${a.sub}</div></div>
+          <div class="row-end" style="font-weight:400; color:var(--ink-faint); font-size:12.5px;">${fmtDate(a.date)}</div>
+        </li>`).join('') : emptyState("i-leaf","No activity yet","Log a purchase or some waste to see it here.")}
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Quick actions</h3>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:14px;">
+        <button class="btn" style="justify-content:flex-start" data-open-modal="waste"><svg class="icon"><use href="#i-basket"/></svg>Log wasted food</button>
+        <button class="btn" style="justify-content:flex-start" data-open-modal="purchase"><svg class="icon"><use href="#i-coin"/></svg>Add a purchase</button>
+        <button class="btn" style="justify-content:flex-start" data-open-modal="inventory"><svg class="icon"><use href="#i-box"/></svg>Add to inventory</button>
+        <button class="btn" style="justify-content:flex-start" data-open-modal="surplus"><svg class="icon"><use href="#i-hands"/></svg>Share surplus food</button>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: WASTE TRACKER
+=============================================================== */
+function renderWaste(){
+  const wm = wasteThisMonth();
+  const common = mostCommonReason();
+  const reasonCounts = {};
+  state.waste.forEach(w=>reasonCounts[w.reason]=(reasonCounts[w.reason]||0)+1);
+  const maxReason = Math.max(1,...Object.values(reasonCounts));
+  const rows = [...state.waste].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  return `
+  <div class="stat-grid">
+    ${statCard("i-basket", wm.length, "Wasted this month", "rust")}
+    ${statCard("i-coin", fmtMoney(wasteCost(wm)), "Cost this month", "rust")}
+    ${statCard("i-flame", common? common.reason : "—", common? `Top reason (${common.count}×)` : "Top reason", "gold")}
+    ${statCard("i-chart", state.waste.length, "All-time entries", "blue")}
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Log wasted food</h3>
+      <form id="wasteForm" style="margin-top:14px; display:flex; flex-direction:column; gap:12px;">
+        <div class="form-row">
+          <div class="field" style="flex:2"><label>Food / item</label><input name="item" required placeholder="e.g. Silverbeet"></div>
+          <div class="field field-sm"><label>Qty</label><input name="qty" type="number" min="0" step="0.1" value="1" required></div>
+          <div class="field field-sm"><label>Unit</label><input name="unit" placeholder="bag, pcs…" value="pcs"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Reason</label>
+            <select name="reason"><option>Expired</option><option>Forgotten</option><option>Damaged</option><option>Cooked too much</option><option>Didn't like it</option><option>Other</option></select>
+          </div>
+          <div class="field field-sm"><label>Cost ($)</label><input name="cost" type="number" min="0" step="0.1" value="3" required></div>
+          <div class="field"><label>Date</label><input name="date" type="date" value="${todayStr()}" required></div>
+        </div>
+        <button class="btn btn-primary" type="submit" style="align-self:flex-start"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"/></svg>Log it</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Waste by reason</h3>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+        ${Object.entries(reasonCounts).sort((a,b)=>b[1]-a[1]).map(([r,c])=>`
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;"><span>${r}</span><span style="color:var(--ink-faint)">${c}</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:${(c/maxReason)*100}%; background:var(--accent)"></div></div>
+          </div>`).join('') || emptyState("i-leaf","No patterns yet","Log some waste to see reasons stack up.")}
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Waste history</h3>
+    <ul class="list">
+      ${rows.length? rows.map(w=>`
+        <li class="list-row">
+          <div class="row-icon" style="background:var(--rust-soft); color:var(--rust-ink)"><svg class="icon" style="width:16px;height:16px"><use href="#i-basket"/></svg></div>
+          <div class="row-main"><div class="row-title">${w.item} <span style="font-weight:400;color:var(--ink-faint)">· ${w.qty} ${w.unit}</span></div><div class="row-sub">${w.reason} · ${fmtDate(w.date)}</div></div>
+          <div class="row-end">${fmtMoney(w.cost)}</div>
+          <button class="btn-danger-text" data-delete="waste" data-id="${w.id}">Remove</button>
+        </li>`).join('') : emptyState("i-basket","Nothing logged yet","Add your first wasted item above.")}
+    </ul>
+  </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: MONEY TRACKER
+=============================================================== */
+function renderMoney(){
+  const pm = purchasesThisMonth();
+  const wm = wasteThisMonth();
+  const spendM = spendTotal(pm);
+  const costM = wasteCost(wm);
+  const remaining = state.budgetMonthly - spendM;
+  const rows = [...state.purchases].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  return `
+  <div class="stat-grid">
+    ${statCard("i-coin", fmtMoney(spendM), "Spent on food this month", "blue")}
+    ${statCard("i-basket", fmtMoney(costM), "Lost to waste this month", "rust")}
+    ${statCard("i-leaf", fmtMoney(remaining), remaining>=0?"Left in budget":"Over budget", remaining>=0?"green":"rust")}
+    ${statCard("i-chart", Math.round((costM/(spendM||1))*100)+"%", "Of spend wasted", "gold")}
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Monthly budget</h3>
+      <form id="budgetForm" class="form-row" style="margin-top:12px; align-items:flex-end;">
+        <div class="field"><label>Set your monthly food budget ($)</label><input name="budget" type="number" min="0" step="1" value="${state.budgetMonthly}"></div>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </form>
+      <div style="margin-top:16px;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;"><span>Spent so far</span><strong>${fmtMoney(spendM)} of ${fmtMoney(state.budgetMonthly)}</strong></div>
+        <div class="progress-track"><div class="progress-fill" style="width:${clamp((spendM/(state.budgetMonthly||1))*100,0,100)}%; background:${spendM>state.budgetMonthly?'var(--rust)':'var(--green)'}"></div></div>
+      </div>
+      <h3 style="margin-top:22px;">Add a purchase</h3>
+      <form id="purchaseForm" style="margin-top:12px; display:flex; flex-direction:column; gap:12px;">
+        <div class="form-row">
+          <div class="field" style="flex:2"><label>What did you buy</label><input name="name" required placeholder="e.g. Weekly groceries"></div>
+          <div class="field field-sm"><label>Amount ($)</label><input name="amount" type="number" min="0" step="0.5" required></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Category</label><select name="category"><option>Groceries</option><option>Produce</option><option>Meat</option><option>Dairy</option><option>Takeaway</option><option>Other</option></select></div>
+          <div class="field"><label>Date</label><input name="date" type="date" value="${todayStr()}"></div>
+        </div>
+        <button class="btn btn-primary" type="submit" style="align-self:flex-start"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"/></svg>Add purchase</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Future savings simulator</h3>
+      <p style="font-size:13px; color:var(--ink-soft); margin-top:6px;">If you cut how much food you waste, here's roughly what it's worth.</p>
+      <div style="margin-top:16px;">
+        <input type="range" id="savingsSlider" min="0" max="80" value="30" style="width:100%; accent-color:var(--green);">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink-faint);"><span>0%</span><span id="savingsPctLabel" style="font-weight:700; color:var(--ink);">30% less waste</span><span>80%</span></div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr 1fr; margin-top:18px; gap:12px;">
+        <div class="card" style="padding:14px; background:var(--paper-dim);"><div style="font-size:11px;color:var(--ink-faint)">Per month</div><div id="savePerMonth" style="font-family:var(--font-display);font-size:20px;font-weight:600;">$0</div></div>
+        <div class="card" style="padding:14px; background:var(--paper-dim);"><div style="font-size:11px;color:var(--ink-faint)">Per year</div><div id="savePerYear" style="font-family:var(--font-display);font-size:20px;font-weight:600;">$0</div></div>
+        <div class="card" style="padding:14px; background:var(--paper-dim);"><div style="font-size:11px;color:var(--ink-faint)">Over 3 years</div><div id="savePer3Year" style="font-family:var(--font-display);font-size:20px;font-weight:600;">$0</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Purchase history</h3>
+    <ul class="list">
+      ${rows.length? rows.map(p=>`
+        <li class="list-row">
+          <div class="row-icon" style="background:var(--blue-soft); color:var(--blue)"><svg class="icon" style="width:16px;height:16px"><use href="#i-coin"/></svg></div>
+          <div class="row-main"><div class="row-title">${p.name}</div><div class="row-sub">${p.category} · ${fmtDate(p.date)}</div></div>
+          <div class="row-end">${fmtMoney(p.amount)}</div>
+          <button class="btn-danger-text" data-delete="purchases" data-id="${p.id}">Remove</button>
+        </li>`).join('') : emptyState("i-coin","No purchases yet","Add one above to start tracking spend.")}
+    </ul>
+  </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: INVENTORY
+=============================================================== */
+function renderInventory(){
+  const items = state.inventory.map(i=>({...i, urgency:inventoryUrgency(i)}))
+    .sort((a,b)=> daysBetween(todayStr(),a.expiry)-daysBetween(todayStr(),b.expiry));
+
+  return `
+  <div class="card">
+    <h3>Add to inventory</h3>
+    <form id="inventoryForm" class="form-row" style="margin-top:12px; align-items:flex-end;">
+      <div class="field" style="flex:2"><label>Food name</label><input name="name" required placeholder="e.g. Broccoli"></div>
+      <div class="field"><label>Quantity</label><input name="qty" placeholder="e.g. 2, 500g" value="1"></div>
+      <div class="field"><label>Best before</label><input name="expiry" type="date" value="${todayStr()}" required></div>
+      <button class="btn btn-primary" type="submit"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"/></svg>Add</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>In the kitchen right now</h3>
+    <ul class="list">
+      ${items.length? items.map(i=>`
+        <li class="list-row">
+          <div class="row-icon" style="background:var(--paper-dim);"><svg class="icon" style="width:16px;height:16px"><use href="#i-box"/></svg></div>
+          <div class="row-main"><div class="row-title">${i.name} <span style="font-weight:400;color:var(--ink-faint)">· ${i.qty}</span></div><div class="row-sub">Best before ${fmtDate(i.expiry)}</div></div>
+          <span class="badge ${urgencyBadgeClass(i.urgency)}">${urgencyLabel(i.urgency)}</span>
+          <button class="btn-danger-text" data-delete="inventory" data-id="${i.id}">Remove</button>
+        </li>`).join('') : emptyState("i-box","Inventory is empty","Add what's in your fridge and pantry.")}
+    </ul>
+  </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: RESCUE QUEUE
+=============================================================== */
+function renderRescue(){
+  const list = rescueList();
+  return `
+  <div class="card" style="background:var(--green-soft); border-color:transparent;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg class="icon" style="width:22px;height:22px; color:var(--green-soft-ink)"><use href="#i-clock"/></svg>
+      <p style="font-size:13.5px; color:var(--green-soft-ink);">Anything close to its date lands here automatically from your inventory. Decide before it becomes waste: eat it, freeze it, or share it.</p>
+    </div>
+  </div>
+  <div style="height:16px"></div>
+  ${list.length ? `<div class="grid grid-3">
+    ${list.map(i=>{
+      const d = daysBetween(todayStr(), i.expiry);
+      return `<div class="card">
+        <span class="badge ${urgencyBadgeClass(i.urgency)}">${d<0? 'Overdue '+Math.abs(d)+'d' : d===0? 'Due today':'Due in '+d+'d'}</span>
+        <h3 style="margin-top:12px;">${i.name}</h3>
+        <p style="font-size:13px; color:var(--ink-faint); margin-top:2px;">${i.qty}</p>
+        <div style="display:flex; gap:6px; margin-top:16px; flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" data-rescue="eat" data-id="${i.id}">Eat</button>
+          <button class="btn btn-sm" data-rescue="freeze" data-id="${i.id}">Freeze</button>
+          <button class="btn btn-sm" data-rescue="share" data-id="${i.id}">Share</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>` : `<div class="card">${emptyState("i-check","Rescue queue is empty","Nothing in your inventory is close to its date right now.")}</div>`}
+  `;
+}
+
+/* ============================================================
+   RENDER: SHARE + RADAR
+=============================================================== */
+const communitySample = [
+  {food:"Homemade bread, half a loaf", amount:"1", location:"Ponsonby · 400m away", by:"A neighbour"},
+  {food:"Excess courgettes from the garden", amount:"6", location:"Kingsland · 1.1km away", by:"Community garden"},
+  {food:"Tinned goods, unopened", amount:"8 cans", location:"Mt Eden · 1.8km away", by:"A neighbour"},
+];
+
+function renderShare(){
+  return `
+  <div class="tabbar">
+    <button class="tab active" data-subtab="mine">Your surplus</button>
+    <button class="tab" data-subtab="radar">Rescue radar</button>
+  </div>
+  <div id="shareSubview">${renderShareMine()}</div>
+  `;
+}
+function renderShareMine(){
+  return `
+  <div class="card">
+    <h3>Share something</h3>
+    <form id="surplusForm" class="form-row" style="margin-top:12px; align-items:flex-end;">
+      <div class="field" style="flex:2"><label>Food</label><input name="food" required placeholder="e.g. Extra silverbeet"></div>
+      <div class="field"><label>Amount</label><input name="amount" placeholder="e.g. 1 bag" value="1"></div>
+      <div class="field" style="flex:1.4"><label>Pickup location</label><input name="location" placeholder="e.g. Grey Lynn" required></div>
+      <button class="btn btn-primary" type="submit"><svg class="icon" style="width:15px;height:15px"><use href="#i-plus"/></svg>List it</button>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Things you've shared</h3>
+    <ul class="list">
+      ${state.surplus.length? state.surplus.map(s=>`
+        <li class="list-row">
+          <div class="row-icon" style="background:var(--green-soft); color:var(--green-soft-ink)"><svg class="icon" style="width:16px;height:16px"><use href="#i-hands"/></svg></div>
+          <div class="row-main"><div class="row-title">${s.food}</div><div class="row-sub">${s.amount} · ${s.location} · ${fmtDate(s.date)}</div></div>
+          <button class="btn-danger-text" data-delete="surplus" data-id="${s.id}">Remove</button>
+        </li>`).join('') : emptyState("i-hands","Nothing shared yet","List surplus food instead of binning it.")}
+    </ul>
+  </div>`;
+}
+function renderShareRadar(){
+  return `<div class="card">
+    <h3>Nearby surplus <span class="badge badge-neutral" style="margin-left:8px;">Sample data</span></h3>
+    <p style="font-size:12.5px; color:var(--ink-faint); margin-top:4px;">A live version would pull from real listings nearby. These are examples of what that looks like.</p>
+    <ul class="list" style="margin-top:6px;">
+      ${communitySample.map(c=>`
+        <li class="list-row">
+          <div class="row-icon" style="background:var(--blue-soft); color:var(--blue)"><svg class="icon" style="width:16px;height:16px"><use href="#i-map"/></svg></div>
+          <div class="row-main"><div class="row-title">${c.food}</div><div class="row-sub">${c.by} · ${c.location}</div></div>
+          <button class="btn btn-sm" data-toast="Request sent (demo) — this would notify ${c.by.toLowerCase()}.">Request</button>
+        </li>`).join('')}
+    </ul>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: KITCHEN
+=============================================================== */
+const RECIPES = [
+  {name:"Green fried rice", keys:["rice","spinach","carrot","egg","onion","kūmara"], desc:"Fry cooked rice with whatever greens and veg are about to turn — finish with a fried egg on top."},
+  {name:"One-pot chicken & veg", keys:["chicken","carrot","onion","kūmara","potato","rice"], desc:"Brown the chicken, soften onion and carrot, add stock and kūmara, simmer until tender."},
+  {name:"Anything soup", keys:["carrot","onion","spinach","kūmara","tomato","potato"], desc:"Sweat onion, add stock and whatever vegetables need using, simmer 20 minutes, blend or not."},
+  {name:"Yoghurt & fruit breakfast bowl", keys:["yoghurt","banana","berries","fruit"], desc:"Layer yoghurt with soft fruit that won't last another day, top with anything crunchy you have."},
+  {name:"Silverbeet & cheese toastie", keys:["silverbeet","spinach","cheese","bread"], desc:"Wilt the greens, fold into a toasted sandwich with whatever cheese is in the fridge door."},
+  {name:"Tomato & bean stew", keys:["tomato","beans","onion","garlic"], desc:"Soften onion and garlic, add tomatoes and tinned beans, simmer until it thickens up."},
+];
+
+function matchRecipes(ingredientsRaw){
+  const ing = ingredientsRaw.toLowerCase().split(/[,\n]/).map(s=>s.trim()).filter(Boolean);
+  if(!ing.length) return [];
+  return RECIPES.map(r=>{
+    const matched = r.keys.filter(k=> ing.some(i=> i.includes(k) || k.includes(i)));
+    return {...r, matched};
+  }).filter(r=>r.matched.length>0).sort((a,b)=>b.matched.length-a.matched.length).slice(0,3);
+}
+
+function renderKitchen(){
+  const week = state.mealPlan;
+  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  return `
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <h3>Use-it-up ideas</h3>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-sm" id="scanFridgeBtn"><svg class="icon" style="width:14px;height:14px"><use href="#i-fridge"/></svg>Scan my fridge (demo)</button>
+        <button class="btn btn-sm" id="useInventoryBtn">Use my inventory</button>
+      </div>
+    </div>
+    <p style="font-size:13px; color:var(--ink-soft); margin-top:8px;">Type in what you've got, comma-separated, and get ideas before it goes to waste.</p>
+    <textarea id="kitchenInput" rows="2" style="width:100%; margin-top:10px; border:1px solid var(--line-strong); border-radius:var(--radius-s); padding:10px; background:var(--paper); outline:none;" placeholder="e.g. spinach, carrots, rice, onion"></textarea>
+    <div id="recipeResults" style="margin-top:16px; display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+  <div class="card">
+    <h3>Weekly meal planner</h3>
+    <p style="font-size:12.5px; color:var(--ink-faint); margin-top:4px; margin-bottom:12px;">Plan around what's about to expire before you plan around what to buy.</p>
+    <div class="week-grid">
+      ${days.map(d=>`<div class="week-day"><div class="dname">${d}</div><input data-day="${d}" value="${week[d]||''}" placeholder="No plan"></div>`).join('')}
+    </div>
+  </div>
+  `;
+}
+
+/* ============================================================
+   RENDER: INSIGHTS
+=============================================================== */
+function renderInsights(){
+  const common = mostCommonReason();
+  const food = mostWastedFood();
+  const trend = wasteTrendDirection();
+  const forecast = forecastNextMonth();
+  const pm = purchasesThisMonth();
+  const spendM = spendTotal(pm);
+  const wm = wasteThisMonth();
+  const pctOfSpend = spendM>0 ? Math.round((wasteCost(wm)/spendM)*100) : 0;
+
+  const cards = [];
+  if(food) cards.push({icon:"i-basket", cls:"rust", title:`You keep losing ${food.item.toLowerCase()}`, text:`It's shown up in your waste log ${food.count} time${food.count>1?'s':''}. Worth buying less of it, or planning a meal around it sooner after you buy.`});
+  if(common) cards.push({icon:"i-flame", cls:"gold", title:`"${common.reason}" is your top reason`, text: common.reason==="Forgotten" ? "Food going in and getting forgotten is the easiest one to fix — the rescue queue exists for exactly this." : common.reason==="Expired" ? "Dates are catching you out more than anything else. Check the rescue queue before shopping again." : "This shows up more than anything else in your log — worth a small change to routine."});
+  cards.push({icon:"i-chart", cls:"blue", title: trend>0 ? "Waste crept up this month" : "Waste is trending down", text: trend>0 ? `You've spent ${fmtMoney(Math.abs(trend))} more on wasted food than last month.` : `You've cut ${fmtMoney(Math.abs(trend))} off last month's waste cost — keep it up.`});
+  cards.push({icon:"i-coin", cls:"green", title:"Next month, roughly", text:`At your current pace, expect around ${fmtMoney(forecast)} in wasted food next month unless something changes.`});
+  if(pctOfSpend>0) cards.push({icon:"i-basket", cls:"rust", title:`${pctOfSpend}% of this month's spend was wasted`, text:"That's food bought and paid for that never got eaten. Even a small drop here is real money back."});
+
+  return `<div style="display:flex; flex-direction:column; gap:14px;">
+    ${cards.map(c=>`<div class="insight-card">
+      <div class="row-icon" style="background:var(--${c.cls}-soft); color:var(--${c.cls}-ink)"><svg class="icon"><use href="#${c.icon}"/></svg></div>
+      <div><h4>${c.title}</h4><p>${c.text}</p></div>
+    </div>`).join('') || emptyState("i-chart","Not enough data yet","Log a few more items and patterns will show up here.")}
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: IMPACT & COMMUNITY
+=============================================================== */
+function treeSvg(level){
+  const stages = [
+    `<circle cx="60" cy="95" r="6" fill="var(--ink-faint)"/><path d="M60 95V80" stroke="var(--green)" stroke-width="4" stroke-linecap="round"/>`,
+    `<path d="M60 95V60" stroke="var(--green)" stroke-width="5" stroke-linecap="round"/><circle cx="60" cy="55" r="12" fill="var(--green-soft)"/>`,
+    `<path d="M60 95V45" stroke="var(--green)" stroke-width="6" stroke-linecap="round"/><circle cx="60" cy="42" r="20" fill="var(--green-soft)"/><circle cx="45" cy="55" r="12" fill="var(--green-soft)"/><circle cx="75" cy="55" r="12" fill="var(--green-soft)"/>`,
+    `<path d="M60 95V35" stroke="var(--green)" stroke-width="7" stroke-linecap="round"/><circle cx="60" cy="32" r="26" fill="var(--green-soft)"/><circle cx="38" cy="50" r="15" fill="var(--green-soft)"/><circle cx="82" cy="50" r="15" fill="var(--green-soft)"/><circle cx="60" cy="55" r="6" fill="var(--accent)"/>`,
+    `<path d="M60 95V28" stroke="var(--green)" stroke-width="8" stroke-linecap="round"/><circle cx="60" cy="26" r="30" fill="var(--green-soft)"/><circle cx="32" cy="48" r="17" fill="var(--green-soft)"/><circle cx="88" cy="48" r="17" fill="var(--green-soft)"/><circle cx="45" cy="30" r="6" fill="var(--accent)"/><circle cx="75" cy="35" r="6" fill="var(--accent)"/><circle cx="60" cy="60" r="6" fill="var(--accent)"/>`
+  ];
+  return `<svg viewBox="0 0 120 100" width="140" height="120">
+    <ellipse cx="60" cy="96" rx="34" ry="4" fill="var(--paper-dim)"/>
+    ${stages[level-1]}
+  </svg>`;
+}
+
+function renderImpact(){
+  const level = impactLevel();
+  const pts = state.impactPoints;
+  const nextAt = level*50;
+  const missions = buildMissions();
+
+  return `
+  <div class="grid grid-2">
+    <div class="card" style="display:flex; align-items:center; gap:20px;">
+      ${treeSvg(level)}
+      <div>
+        <div class="badge badge-green">Level ${level} of 5</div>
+        <h3 style="margin-top:8px;">${pts} impact points</h3>
+        <p style="font-size:13px; color:var(--ink-soft); margin-top:4px;">Eating up, freezing and sharing food all grow your tree. ${level<5? (nextAt-pts)+" points to the next stage." : "You've reached the top stage — kia kaha!"}</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Ripple effect</h3>
+      <p style="font-size:13px; color:var(--ink-soft); margin:6px 0 12px;">Same food, two different outcomes.</p>
+      <div class="pill-toggle" id="rippleToggle">
+        <button class="active" data-ripple="waste">If it's wasted</button>
+        <button data-ripple="share">If it's shared</button>
+      </div>
+      <div id="rippleBody" style="margin-top:14px;"></div>
+    </div>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Your missions</h3>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+        ${missions.map(m=>`
+        <div class="mission-card ${state.missionsDone[m.id]?'done':''}">
+          <button class="mission-check ${state.missionsDone[m.id]?'done':''}" data-mission="${m.id}">${state.missionsDone[m.id]?'<svg class="icon" style="width:12px;height:12px;stroke:#fff"><use href="#i-check"/></svg>':''}</button>
+          <div class="mission-text"><strong style="font-size:13.5px;">${m.title}</strong><div style="font-size:12.5px; color:var(--ink-faint); margin-top:2px;">${m.sub}</div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>Community challenge <span class="badge badge-neutral" style="margin-left:6px;">Sample data</span></h3>
+      <p style="font-size:13px; color:var(--ink-soft); margin:6px 0 12px;">Goal: rescue 10,000kg of food together this season.</p>
+      <div class="progress-track"><div class="progress-fill" style="width:63%"></div></div>
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--ink-faint); margin-top:6px;"><span>6,340kg rescued</span><span>10,000kg goal</span></div>
+      <h3 style="margin-top:22px;">Community garden</h3>
+      <p style="font-size:13px; color:var(--ink-soft); margin:6px 0 10px;">Grows as the community's shared actions add up.</p>
+      <div style="display:flex; gap:6px; font-size:22px;">🌱🌱🌱🌿🌿🌿🌳🌳${pts>40?'🌳':''}</div>
+    </div>
+  </div>
+  `;
+}
+function buildMissions(){
+  const list = [];
+  const r = rescueList();
+  if(r[0]) list.push({id:"m_"+r[0].id, title:`Use up ${r[0].name} before it turns`, sub:"From your rescue queue"});
+  if(state.surplus.length===0) list.push({id:"m_share", title:"Share one surplus item this week", sub:"Manaakitanga — care for others"});
+  list.push({id:"m_checkinv", title:"Check your inventory before your next shop", sub:"Avoid buying what you already have"});
+  while(list.length<3) list.push({id:"m_log"+list.length, title:"Log any food you waste today", sub:"Small logging habit, big picture over time"});
+  return list.slice(0,3);
+}
+function rippleBody(kind){
+  if(kind==="waste"){
+    return `<ul class="checklist-item" style="flex-direction:column; align-items:flex-start;">
+      <li class="checklist-item">🍂 Food lost — nothing eaten for the money spent</li>
+      <li class="checklist-item">💸 Money spent for nothing in return</li>
+      <li class="checklist-item">🌍 Growing, packing and transport resources wasted too</li>
+      <li class="checklist-item">📉 One more entry pulling your waste pattern the wrong way</li>
+    </ul>`;
+  }
+  return `<ul class="checklist-item" style="flex-direction:column; align-items:flex-start;">
+      <li class="checklist-item">🥗 Food rescued and actually eaten</li>
+      <li class="checklist-item">🤝 Someone else fed, for less than a full shop</li>
+      <li class="checklist-item">💚 Value retained instead of binned</li>
+      <li class="checklist-item">🌱 A small deposit into the community garden</li>
+    </ul>`;
+}
+
+/* ============================================================
+   RENDER: KAI NETWORK
+=============================================================== */
+const businessSample = [
+  {name:"Riverside Bakery", food:"End-of-day bread & pastries", qty:"~15kg / day", region:"Central Auckland", reason:"Overproduction"},
+  {name:"Green Grocer Co-op", food:"Cosmetically imperfect produce", qty:"~40kg / week", region:"West Auckland", reason:"Doesn't meet retail spec"},
+  {name:"Harbourside Catering", food:"Cancelled event platters", qty:"Varies", region:"Auckland CBD", reason:"Cancelled order"},
+];
+const supportSample = [
+  {name:"Community Fridge — Grey Lynn", type:"Free community fridge", area:"Grey Lynn"},
+  {name:"Riverside Food Bank", type:"Food bank, referral or drop-in", area:"West Auckland"},
+  {name:"Kai Collective Kitchen", type:"Community meals & pantry", area:"Central Auckland"},
+];
+function renderNetwork(){
+  return `
+  <div class="card">
+    <h3>How it connects</h3>
+    <div class="network-diagram">
+      <div class="network-node"><svg class="icon"><use href="#i-home"/></svg><span>Households</span></div>
+      <div class="network-arrow">↔</div>
+      <div class="network-node"><svg class="icon"><use href="#i-box"/></svg><span>Businesses</span></div>
+      <div class="network-arrow">↔</div>
+      <div class="network-node"><svg class="icon"><use href="#i-hands"/></svg><span>Food rescue</span></div>
+      <div class="network-arrow">↔</div>
+      <div class="network-node"><svg class="icon"><use href="#i-heart"/></svg><span>Community</span></div>
+    </div>
+    <p style="font-size:13px; color:var(--ink-soft);">Surplus doesn't have to end at any one point in this chain — a household's extra kūmara and a bakery's end-of-day bread can both end up rescued, matched and eaten instead of binned.</p>
+  </div>
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Business surplus <span class="badge badge-neutral" style="margin-left:6px;">Sample data</span></h3>
+      <ul class="list">
+        ${businessSample.map(b=>`
+          <li class="list-row">
+            <div class="row-icon" style="background:var(--paper-dim);"><svg class="icon" style="width:16px;height:16px"><use href="#i-box"/></svg></div>
+            <div class="row-main"><div class="row-title">${b.name}</div><div class="row-sub">${b.food} · ${b.qty}</div></div>
+            <span class="badge badge-neutral">${b.region}</span>
+          </li>`).join('')}
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Food support directory <span class="badge badge-neutral" style="margin-left:6px;">Sample data</span></h3>
+      <ul class="list">
+        ${supportSample.map(s=>`
+          <li class="list-row">
+            <div class="row-icon" style="background:var(--blue-soft); color:var(--blue)"><svg class="icon" style="width:16px;height:16px"><use href="#i-heart"/></svg></div>
+            <div class="row-main"><div class="row-title">${s.name}</div><div class="row-sub">${s.type}</div></div>
+            <span class="badge badge-neutral">${s.area}</span>
+          </li>`).join('')}
+      </ul>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   RENDER: VALUES
+=============================================================== */
+const VALUES = [
+  {m:"Kaitiakitanga", e:"Guardianship", t:"Looking after food, and what it took to grow it, as something worth protecting — not something disposable."},
+  {m:"Manaakitanga", e:"Care for others", t:"Sharing what you won't use is an act of care, not charity — it's how surplus finds someone who needs it."},
+  {m:"Whanaungatanga", e:"Relationships & connection", t:"Food connects households, growers, businesses and neighbours — KaiTū is built to make those connections visible."},
+  {m:"Kotahitanga", e:"Collective action", t:"One household's changes are small. A community moving together is how real change in food waste happens."},
+  {m:"Rangatiratanga", e:"Self-determination", t:"Households make their own calls on what to eat, freeze or share — KaiTū gives information, not instructions."},
+];
+function renderValues(){
+  return `<p style="font-size:14px; color:var(--ink-soft); max-width:64ch; margin-bottom:22px; line-height:1.6;">KaiTū is built around five values that shape why it exists, not just what it tracks. They sit behind every feature in this app, from the rescue queue to the community garden.</p>
+  <div class="grid grid-3">
+    ${VALUES.map(v=>`<div class="value-card"><div class="maori">${v.m}</div><div class="eng">${v.e}</div><p>${v.t}</p></div>`).join('')}
+  </div>`;
+}
+
+/* ============================================================
+   RENDERER MAP
+=============================================================== */
+const renderers = {
+  dashboard: renderDashboard, waste: renderWaste, money: renderMoney, inventory: renderInventory,
+  rescue: renderRescue, share: renderShare, kitchen: renderKitchen, insights: renderInsights,
+  impact: renderImpact, network: renderNetwork, values: renderValues,
+};
+
+/* ============================================================
+   MODALS (quick add)
+=============================================================== */
+function openModal(kind){
+  const root = document.getElementById("modalRoot");
+  const forms = {
+    waste: {title:"Log wasted food", body:`
+      <div class="form-row"><div class="field" style="flex:2"><label>Item</label><input name="item" required></div><div class="field field-sm"><label>Qty</label><input name="qty" type="number" value="1"></div></div>
+      <div class="form-row"><div class="field"><label>Reason</label><select name="reason"><option>Expired</option><option>Forgotten</option><option>Damaged</option><option>Cooked too much</option><option>Other</option></select></div><div class="field field-sm"><label>Cost ($)</label><input name="cost" type="number" value="3"></div></div>
+      <input type="hidden" name="unit" value="pcs"><input type="hidden" name="date" value="${todayStr()}">`, action:"waste"},
+    purchase: {title:"Add a purchase", body:`
+      <div class="form-row"><div class="field" style="flex:2"><label>Name</label><input name="name" required></div><div class="field field-sm"><label>Amount ($)</label><input name="amount" type="number" required></div></div>
+      <div class="field"><label>Category</label><select name="category"><option>Groceries</option><option>Produce</option><option>Meat</option><option>Dairy</option><option>Takeaway</option><option>Other</option></select></div>
+      <input type="hidden" name="date" value="${todayStr()}">`, action:"purchase"},
+    inventory: {title:"Add to inventory", body:`
+      <div class="form-row"><div class="field" style="flex:2"><label>Name</label><input name="name" required></div><div class="field"><label>Qty</label><input name="qty" value="1"></div></div>
+      <div class="field"><label>Best before</label><input name="expiry" type="date" value="${todayStr()}" required></div>`, action:"inventory"},
+    surplus: {title:"Share surplus food", body:`
+      <div class="form-row"><div class="field" style="flex:2"><label>Food</label><input name="food" required></div><div class="field"><label>Amount</label><input name="amount" value="1"></div></div>
+      <div class="field"><label>Pickup location</label><input name="location" required></div>
+      <input type="hidden" name="date" value="${todayStr()}">`, action:"surplus"},
+  };
+  const f = forms[kind];
+  root.innerHTML = `<div class="modal-scrim" id="modalScrim">
+    <div class="modal">
+      <div class="modal-head"><h3>${f.title}</h3><button class="icon-btn" id="modalClose">✕</button></div>
+      <form id="quickForm" style="display:flex; flex-direction:column; gap:12px;">
+        ${f.body}
+        <button class="btn btn-primary" type="submit" style="margin-top:6px;">Save</button>
+      </form>
+    </div>
+  </div>`;
+  document.getElementById("modalScrim").addEventListener("click", e=>{ if(e.target.id==="modalScrim") closeModal(); });
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  document.getElementById("quickForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    submitAction(f.action, data);
+    closeModal();
+  });
+}
+function closeModal(){ document.getElementById("modalRoot").innerHTML = ""; }
+
+function submitAction(action, data){
+  if(action==="waste"){
+    state.waste.push({id:uid(), item:data.item, qty:Number(data.qty||1), unit:data.unit||"pcs", reason:data.reason, cost:Number(data.cost||0), date:data.date||todayStr()});
+    toast("Logged: "+data.item);
+  } else if(action==="purchase"){
+    state.purchases.push({id:uid(), name:data.name, amount:Number(data.amount||0), category:data.category, date:data.date||todayStr()});
+    toast("Purchase added");
+  } else if(action==="inventory"){
+    state.inventory.push({id:uid(), name:data.name, qty:data.qty||"1", expiry:data.expiry});
+    toast("Added to inventory");
+  } else if(action==="surplus"){
+    state.surplus.push({id:uid(), food:data.food, amount:data.amount||"1", location:data.location, date:data.date||todayStr()});
+    addPoints(8);
+    toast("Shared — thanks for the manaakitanga");
+  }
+  saveState();
+  const active = document.querySelector(".nav-item.active");
+  if(active) setView(active.dataset.view);
+}
+
+/* ============================================================
+   EVENT WIRING
+=============================================================== */
+document.querySelectorAll(".nav-item").forEach(btn=>{
+  btn.addEventListener("click", ()=> setView(btn.dataset.view));
+});
+document.getElementById("quickAddBtn").addEventListener("click", ()=> openModal("waste"));
+document.getElementById("notifBtn").addEventListener("click", ()=>{
+  const r = rescueList();
+  toast(r.length? `${r.length} item${r.length>1?'s':''} need attention in your rescue queue` : "Nothing urgent right now");
+});
+document.getElementById("globalSearch").addEventListener("input", (e)=>{
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll(".nav-item").forEach(b=>{
+    b.style.opacity = (!q || b.textContent.toLowerCase().includes(q)) ? "1" : "0.35";
+  });
+});
+document.getElementById("whanauBtn").addEventListener("click", ()=>{
+  state.whanauMode = !state.whanauMode; saveState();
+  document.getElementById("whanauState").textContent = state.whanauMode ? "On — shared household" : "Off — just me";
+  toast(state.whanauMode ? "Whānau mode on — sharing this view as a household" : "Whānau mode off");
+});
+document.getElementById("whanauState").textContent = state.whanauMode ? "On — shared household" : "Off — just me";
+
+function updateNotifDot(){
+  document.getElementById("notifDot").style.display = rescueList().length ? "block" : "none";
+}
+
+/* Delegated events for dynamic content inside #viewRoot */
+document.getElementById("viewRoot").addEventListener("submit", e=>{
+  if(e.target.id==="wasteForm"){
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target).entries());
+    state.waste.push({id:uid(), item:d.item, qty:Number(d.qty||1), unit:d.unit||"pcs", reason:d.reason, cost:Number(d.cost||0), date:d.date});
+    saveState(); toast("Logged: "+d.item); setView("waste");
+  }
+  if(e.target.id==="purchaseForm"){
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target).entries());
+    state.purchases.push({id:uid(), name:d.name, amount:Number(d.amount||0), category:d.category, date:d.date});
+    saveState(); toast("Purchase added"); setView("money");
+  }
+  if(e.target.id==="budgetForm"){
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target).entries());
+    state.budgetMonthly = Number(d.budget||0); saveState(); toast("Budget updated"); setView("money");
+  }
+  if(e.target.id==="inventoryForm"){
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target).entries());
+    state.inventory.push({id:uid(), name:d.name, qty:d.qty||"1", expiry:d.expiry});
+    saveState(); toast("Added to inventory"); setView("inventory");
+  }
+  if(e.target.id==="surplusForm"){
+    e.preventDefault();
+    const d = Object.fromEntries(new FormData(e.target).entries());
+    state.surplus.push({id:uid(), food:d.food, amount:d.amount||"1", location:d.location, date:todayStr()});
+    addPoints(8);
+    saveState(); toast("Shared — thanks for the manaakitanga");
+    document.getElementById("shareSubview").innerHTML = renderShareMine();
+  }
+});
+
+document.getElementById("viewRoot").addEventListener("click", e=>{
+  const del = e.target.closest("[data-delete]");
+  if(del){
+    const key = del.dataset.delete, id = del.dataset.id;
+    state[key] = state[key].filter(x=>x.id!==id);
+    saveState(); toast("Removed");
+    const active = document.querySelector(".nav-item.active");
+    setView(active.dataset.view);
+    return;
+  }
+  const goto = e.target.closest("[data-goto]");
+  if(goto){ setView(goto.dataset.goto); return; }
+
+  const openM = e.target.closest("[data-open-modal]");
+  if(openM){ openModal(openM.dataset.openModal); return; }
+
+  const rescueBtn = e.target.closest("[data-rescue]");
+  if(rescueBtn){
+    const action = rescueBtn.dataset.rescue, id = rescueBtn.dataset.id;
+    const item = state.inventory.find(i=>i.id===id);
+    state.inventory = state.inventory.filter(i=>i.id!==id);
+    if(action==="share" && item){ state.surplus.push({id:uid(), food:item.name, amount:item.qty, location:"Local pickup", date:todayStr()}); }
+    addPoints(action==="share"?10:6);
+    saveState();
+    toast(action==="eat"? `Marked ${item.name} as eaten — nice work` : action==="freeze"? `${item.name} frozen for later` : `${item.name} listed to share`);
+    setView("rescue");
+    return;
+  }
+
+  const tab = e.target.closest("[data-subtab]");
+  if(tab){
+    document.querySelectorAll("#viewRoot .tab").forEach(t=>t.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("shareSubview").innerHTML = tab.dataset.subtab==="mine" ? renderShareMine() : renderShareRadar();
+    return;
+  }
+
+  const missionBtn = e.target.closest("[data-mission]");
+  if(missionBtn){
+    const id = missionBtn.dataset.mission;
+    const wasDone = !!state.missionsDone[id];
+    state.missionsDone[id] = !wasDone;
+    if(!wasDone) addPoints(12); else state.impactPoints = Math.max(0, state.impactPoints-12);
+    saveState(); setView("impact");
+    return;
+  }
+
+  const rippleBtn = e.target.closest("[data-ripple]");
+  if(rippleBtn){
+    document.querySelectorAll("#rippleToggle button").forEach(b=>b.classList.remove("active"));
+    rippleBtn.classList.add("active");
+    document.getElementById("rippleBody").innerHTML = rippleBody(rippleBtn.dataset.ripple);
+    return;
+  }
+
+  const toastBtn = e.target.closest("[data-toast]");
+  if(toastBtn){ toast(toastBtn.dataset.toast); return; }
+
+  if(e.target.id==="scanFridgeBtn"){
+    const demo = [ {name:"Broccoli", qty:"1 head"}, {name:"Free-range eggs", qty:"6"}, {name:"Feta", qty:"1 block"} ];
+    demo.forEach(d=> state.inventory.push({id:uid(), name:d.name, qty:d.qty, expiry: (()=>{const dd=new Date(); dd.setDate(dd.getDate()+4); return dd.toISOString().slice(0,10);})() }));
+    saveState(); toast("Demo scan added 3 items to your inventory");
+    return;
+  }
+  if(e.target.id==="useInventoryBtn"){
+    const fresh = state.inventory.filter(i=>inventoryUrgency(i)!=="fresh"||true).map(i=>i.name).join(", ");
+    document.getElementById("kitchenInput").value = fresh;
+    renderRecipeResults(fresh);
+    return;
+  }
+});
+
+document.getElementById("viewRoot").addEventListener("input", e=>{
+  if(e.target.id==="kitchenInput"){ renderRecipeResults(e.target.value); }
+  if(e.target.id==="savingsSlider"){ updateSavingsSim(); }
+  if(e.target.dataset.day){ state.mealPlan[e.target.dataset.day] = e.target.value; saveState(); }
+});
+
+function renderRecipeResults(text){
+  const box = document.getElementById("recipeResults");
+  if(!box) return;
+  const matches = matchRecipes(text);
+  box.innerHTML = matches.length ? matches.map(r=>`
+    <div class="recipe-card">
+      <div class="match">Uses ${r.matched.length} of your ingredient${r.matched.length>1?'s':''}</div>
+      <h4>${r.name}</h4>
+      <p>${r.desc}</p>
+    </div>`).join('') : (text.trim() ? emptyState("i-pot","No matches yet","Try adding a few more ingredients.") : "");
+}
+function updateSavingsSim(){
+  const slider = document.getElementById("savingsSlider");
+  if(!slider) return;
+  const pct = Number(slider.value);
+  document.getElementById("savingsPctLabel").textContent = pct+"% less waste";
+  const monthlyCost = wasteCost(wasteThisMonth()) || wasteCost(state.waste.slice(-5));
+  const perMonth = monthlyCost * (pct/100);
+  document.getElementById("savePerMonth").textContent = fmtMoney(perMonth);
+  document.getElementById("savePerYear").textContent = fmtMoney(perMonth*12);
+  document.getElementById("savePer3Year").textContent = fmtMoney(perMonth*36);
+}
+
+/* ============================================================
+   SETTINGS PANEL
+=============================================================== */
+function applySettings(){
+  const s = state.settings;
+  document.documentElement.setAttribute("data-accent", s.accent);
+  document.documentElement.setAttribute("data-motion", s.motion==="reduced" ? "reduced" : "full");
+  document.documentElement.setAttribute("data-density", s.density==="compact" ? "compact" : "comfortable");
+  if(s.theme==="light") document.documentElement.setAttribute("data-theme","light");
+  else if(s.theme==="dark") document.documentElement.setAttribute("data-theme","dark");
+  else document.documentElement.removeAttribute("data-theme");
+  document.body.setAttribute("data-fontsize", s.fontsize||"m");
+}
+function openSettings(){
+  const root = document.getElementById("modalRoot");
+  const s = state.settings;
+  const accents = [["gold","#E0A63A"],["green","#4F7A54"],["rust","#C15A3B"],["blue","#3E7C8C"]];
+  root.innerHTML = `<div class="modal-scrim" id="modalScrim">
+    <div class="modal">
+      <div class="modal-head"><h3>Theme &amp; accessibility</h3><button class="icon-btn" id="modalClose">✕</button></div>
+      <div class="settings-section">
+        <h4>Appearance</h4>
+        <div class="pill-toggle" id="themeToggle">
+          <button data-theme="system" class="${s.theme==='system'?'active':''}">System</button>
+          <button data-theme="light" class="${s.theme==='light'?'active':''}">Light</button>
+          <button data-theme="dark" class="${s.theme==='dark'?'active':''}">Dark</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Accent colour</h4>
+        <div class="swatch-row">
+          ${accents.map(([id,hex])=>`<button class="swatch ${s.accent===id?'selected':''}" data-accent="${id}" style="background:${hex}"></button>`).join('')}
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Text size</h4>
+        <div class="pill-toggle" id="fontToggle">
+          <button data-fontsize="s" class="${s.fontsize==='s'?'active':''}">Small</button>
+          <button data-fontsize="m" class="${s.fontsize==='m'?'active':''}">Medium</button>
+          <button data-fontsize="l" class="${s.fontsize==='l'?'active':''}">Large</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>Motion &amp; density</h4>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:8px;"><input type="checkbox" id="motionCheck" ${s.motion==='reduced'?'checked':''}> Reduce motion</label>
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;"><input type="checkbox" id="densityCheck" ${s.density==='compact'?'checked':''}> Compact density</label>
+      </div>
+      <div class="settings-section" style="margin-bottom:0;">
+        <h4>Data</h4>
+        <button class="btn btn-sm" id="resetDataBtn">Reset demo data</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById("modalScrim").addEventListener("click", e=>{ if(e.target.id==="modalScrim") closeModal(); });
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  document.getElementById("themeToggle").addEventListener("click", e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    state.settings.theme = b.dataset.theme; saveState(); applySettings(); openSettings();
+  });
+  document.getElementById("fontToggle").addEventListener("click", e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    state.settings.fontsize = b.dataset.fontsize; saveState(); applySettings(); openSettings();
+  });
+  document.querySelectorAll(".swatch").forEach(sw=> sw.addEventListener("click", ()=>{
+    state.settings.accent = sw.dataset.accent; saveState(); applySettings(); openSettings();
+  }));
+  document.getElementById("motionCheck").addEventListener("change", e=>{
+    state.settings.motion = e.target.checked ? "reduced" : "full"; saveState(); applySettings();
+  });
+  document.getElementById("densityCheck").addEventListener("change", e=>{
+    state.settings.density = e.target.checked ? "compact" : "comfortable"; saveState(); applySettings();
+  });
+  document.getElementById("resetDataBtn").addEventListener("click", ()=>{
+    localStorage.removeItem(LS_KEY);
+    state = loadState();
+    applySettings();
+    closeModal();
+    toast("Demo data reset");
+    const active = document.querySelector(".nav-item.active");
+    setView(active ? active.dataset.view : "dashboard");
+  });
+}
+document.getElementById("settingsBtn").addEventListener("click", openSettings);
+
+/* ============================================================
+   INIT
+=============================================================== */
+applySettings();
+const startView = (location.hash||"").replace("#","") in VIEWS ? location.hash.replace("#","") : "dashboard";
+setView(startView);
+updateNotifDot();
+setTimeout(()=>{
+  if(document.getElementById("savingsSlider")) updateSavingsSim();
+},50);
+
+})();
+</script>
+</body>
+</html>
